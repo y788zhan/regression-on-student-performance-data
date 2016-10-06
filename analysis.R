@@ -79,10 +79,10 @@ cv.errors = matrix(NA, k, 30, dimnames = list(NULL, paste(1:30)))
  # is the test MSE for j-th cross-validation fold for the best i-variable model
  ##
 for (j in 1:k) {
-	best.fit = regsubsets(G3 ~ ., data = port[folds != j,], nvmax = 30)
+	best.fit = regsubsets(G3 ~ ., data = port[folds != j, ], nvmax = 30)
 	for (i in 1:30) {
-		pred = predict(best.fit, port[folds==j,], id = i) 
-		cv.errors[j, i] = mean((port$G3[folds==j] - pred)^2)
+		pred = predict(best.fit, port[folds == j, ], id = i) 
+		cv.errors[j, i] = mean((port$G3[folds == j] - pred) ^ 2)
 	}
 }
 
@@ -105,19 +105,19 @@ coef(reg.best, minMSE)
 x = model.matrix(G3 ~ ., port)[, -1]
 y = port$G3
 # create lambda values from 1E-2 to 1E10
-grid = 10^seq(10, -2, length = 100)
+grid = 10 ^ seq(10, -2, length = 100)
 
 train = sample(1:nrow(x), nrow(x) / 2)
 test = (-train)
 y.test = y[test]
 
 # cross validation on lambda
-lasso.mod = glmnet(x[train,], y[train], alpha = 1, lambda = grid)
-cv.out = cv.glmnet(x[train,], y[train], alpha = 1)
+lasso.mod = glmnet(x[train, ], y[train], alpha = 1, lambda = grid)
+cv.out = cv.glmnet(x[train, ], y[train], alpha = 1)
 plot(cv.out)
 bestlam = cv.out$lambda.min
-lasso.pred = predict(lasso.mod, s = bestlam, newx = x[test,])
-mean((lasso.pred - y.test)^2) # 8.224117
+lasso.pred = predict(lasso.mod, s = bestlam, newx = x[test, ])
+mean((lasso.pred - y.test) ^ 2) # 8.224117
 
 # build model using full dataset
 out = glmnet(x, y, alpha = 1, lambda = grid)
@@ -169,8 +169,8 @@ pls.fit = plsr(G3 ~ ., data = port, subset = train, scale = TRUE, validation = '
 summary(pls.fit) # minimum validation error occurs at comp = 2
 validationplot(pls.fit, val.type = 'MSEP')
 
-pls.pred = predict(pls.fit, x[test,], ncomp = 2)
-mean((pls.pred - y.test)^2) # 8.413339
+pls.pred = predict(pls.fit, x[test, ], ncomp = 2)
+mean((pls.pred - y.test) ^ 2) # 8.413339
 
 # build model using full dataset
 pls.fit = plsr(G3 ~ ., data = port, scale = TRUE, ncomp = 2)
@@ -181,36 +181,38 @@ summary(pls.fit)
  # Fit method: kernelpls
  # Number of components considered: 2
  # TRAINING: % variance explained
- #     1 comps  2 comps
- # X     9.736    14.36
- # G3   29.150    33.80
+ #              1 comps   2 comps
+ #          X     9.736     14.36
+ #          G3   29.150     33.80
  ##
 
 # bootstrapping
-resample = port[sample(1:nrow(port), 10000, replace = TRUE),]
+resample = port[sample(1:nrow(port), 10000, replace = TRUE), ]
 resample.y = resample$G3
 resample.x = model.matrix(G3 ~ ., resample)[, -1]
 
-# function to perform bootstrapping on model
-# allow to specify sampleSize of each bootstrap, and number of samples to take
-# assumes port data already exists
+##
+ # function to perform bootstrapping on model
+ # allow to specify sampleSize of each bootstrap, and number of samples to take
+ # assumes port data already exists
+ ##
 getResampleBSE = function(method, modelObject, specific, sampleSize, numSamples) {
 	BSErrors <- vector(, numSamples)
 
 	for (i in 1:numSamples) {
-		resample = port[sample(1:nrow(port), sampleSize, replace = TRUE),]
+		resample = port[sample(1:nrow(port), sampleSize, replace = TRUE), ]
 		resample.y = resample$G3
 		resample.x = model.matrix(G3 ~ ., resample)[, -1]
 
 		if (method == 'simple') {
 			resample.simpPred = predict(modelObject, resample, id = specific)
-			BSErrors[i] = mean((resample.simpPred - resample.y)^2)
+			BSErrors[i] = mean((resample.simpPred - resample.y) ^ 2)
 		} else if (method == 'lasso') {
 			resample.lassoPred = predict(modelObject, s = specific, newx = resample.x)
-			BSErrors[i] = mean((resample.lassoPred - resample.y)^2)
+			BSErrors[i] = mean((resample.lassoPred - resample.y) ^ 2)
 		} else if (method == 'pls') {
 			resample.PLSPred = predict(modelObject, resample.x, ncomp = specific)
-			BSErrors[i] = mean((resample.PLSPred - resample.y)^2)
+			BSErrors[i] = mean((resample.PLSPred - resample.y) ^ 2)
 		} else {
 			break
 		}

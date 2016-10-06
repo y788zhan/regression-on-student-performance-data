@@ -1,1 +1,1 @@
-# regression-on-student-performance-data
+# Regression on Student Performance Data

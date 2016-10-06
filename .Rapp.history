@@ -1,0 +1,976 @@
+lasso.pred=predict(lasso.mod, s=bestlam, newx=x[test,])
+mean((lasso.pred-y.test)^2)
+out=glmnet(x,y,alpha=1, lambda=grid)
+lasso.coef=predict(out, type="coefficients",s=bestlam)[1:20,]
+lasso.coef
+install.packages('pls')
+library(pls)
+setwd('~/Documents/personal/students')
+setwd('~/Documents/personal/student')
+source('boosted.R')
+minErr
+train
+source("/Users/yzhang/Documents/personal/student/boosted.R")
+minErr
+math
+port
+dim(math)
+dim(port)
+k = 10
+set.seed(1)
+folds = sample(1:k, nrow(port), repalce = TRUE)
+folds = sample(1:k, nrow(port), replace = TRUE)
+val.errors
+train = sample(c(TRUE, FALSE), nrow(port), rep = TRUE)#
+test = 	(!train)#
+test.mat = model.matrix(G3 ~ ., data = port[test,])#
+#
+regfit.best = regsubsets(G3 ~ ., data = port[train,], nvmax = 28)#
+#
+val.errors = rep(NA, 28)#
+for(i in 1:28) {#
+	coefi = coef(regfit.best, id = i)#
+	pred = test.mat[,names(coefi)]%*%coefi#
+	val.errors[i] = mean((port$G3[test] - pred)^2)#
+}
+val.errors
+which.min(val.errors)
+library(ISLR)#
+library(leaps)#
+set.seed(1)#
+#
+math = read.table("student-mat.csv", sep = ";", header = TRUE)#
+math$reason = NULL#
+math$guardian = NULL#
+math$G1 = NULL#
+math$G2 = NULL#
+#
+port = read.table("student-por.csv", sep = ";", header = TRUE)#
+port$reason = NULL#
+port$guardian = NULL#
+port$G1 = NULL#
+port$G2 = NULL#
+#
+# Attributes for both student-mat.csv (Math course) and student-por.csv (Portuguese language course) datasets: #
+#1 school - student's school (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira) #
+#2 sex - student's sex (binary: 'F' - female or 'M' - male) #
+#3 age - student's age (numeric: from 15 to 22) #
+#4 address - student's home address type (binary: 'U' - urban or 'R' - rural) #
+#5 famsize - family size (binary: 'LE3' - less or equal to 3 or 'GT3' - greater than 3) #
+#6 Pstatus - parent's cohabitation status (binary: 'T' - living together or 'A' - apart) #
+#7 Medu - mother's education (numeric: 0 - none, 1 - primary education (4th grade), 2 â€“ 5th to 9th grade, 3 â€“ secondary education or 4 â€“ higher education) #
+#8 Fedu - father's education (numeric: 0 - none, 1 - primary education (4th grade), 2 â€“ 5th to 9th grade, 3 â€“ secondary education or 4 â€“ higher education) #
+#9 Mjob - mother's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other') #
+#10 Fjob - father's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other') #
+#11 traveltime - home to school travel time (numeric: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour) #
+#12 studytime - weekly study time (numeric: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours) #
+#13 failures - number of past class failures (numeric: n if 1<=n<3, else 4) #
+#14 schoolsup - extra educational support (binary: yes or no) #
+#15 famsup - family educational support (binary: yes or no) #
+#16 paid - extra paid classes within the course subject (Math or Portuguese) (binary: yes or no) #
+#17 activities - extra-curricular activities (binary: yes or no) #
+#18 nursery - attended nursery school (binary: yes or no) #
+#19 higher - wants to take higher education (binary: yes or no) #
+#20 internet - Internet access at home (binary: yes or no) #
+#21 romantic - with a romantic relationship (binary: yes or no) #
+#22 famrel - quality of family relationships (numeric: from 1 - very bad to 5 - excellent) #
+#23 freetime - free time after school (numeric: from 1 - very low to 5 - very high) #
+#24 goout - going out with friends (numeric: from 1 - very low to 5 - very high) #
+#25 Dalc - workday alcohol consumption (numeric: from 1 - very low to 5 - very high) #
+#26 Walc - weekend alcohol consumption (numeric: from 1 - very low to 5 - very high) #
+#27 health - current health status (numeric: from 1 - very bad to 5 - very good) #
+#28 absences - number of school absences (numeric: from 0 to 93)#
+#
+#G3 - final grade#
+#
+combined = merge(math, port, by=c( #
+	"school"    , "address"  , "sex"       , "age"      , #
+	"famsize"   , "Pstatus"  , "Medu"      , "Fedu"     , #
+	"Mjob"      , "Fjob"     , "traveltime", "studytime", #
+	"failures"  , "schoolsup", "famsup"    , "paid"     , #
+	"activities", "nursery"  , "higher"    , "internet" , #
+	"romantic"  , "famrel"   , "freetime"  , "goout"    , #
+	"Dalc"      , "Walc"     , "health"    , "absences" ,#
+	"G3" ))#
+#
+# subset selection methods#
+regfit.full = regsubsets(G3 ~ ., data = port, nvmax = 28)#
+reg.summary = summary(regfit.full)#
+#
+# plot test errors#
+par(mfrow = c(2, 2))#
+# RSS#
+plot(reg.summary$rss, xlab = "# of Vars", ylab = "RSS", type = "l")#
+#
+# Adjusted R^2#
+plot(reg.summary$adjr2, xlab = "# of Vars", ylab ="ADJR", type = "l")#
+adjrMax <- which.max(reg.summary$adjr2)#
+points(adjrMax, reg.summary$adjr2[adjrMax], col="red", cex = 2, pch = 20)#
+#
+# Mallow's Cp#
+plot(reg.summary$cp, xlab = "# of Vars", ylab = "Cp", type="l")#
+cpMin <- which.min(reg.summary$cp)#
+points(cpMin, reg.summary$cp[cpMin], col="red", cex = 2, pch = 20)#
+#
+# Bayesian Information Criterion#
+plot(reg.summary$bic, xlab = "# of Vars", ylab = "BIC", type="l")#
+bicMin <- which.min(reg.summary$bic)#
+points(bicMin, summary$bic[bicMin], col="red", cex = 2, pch = 20)#
+#
+# suppose we choose cpMin to be our dimension (cpMin is 13)#
+#
+# forward & backward stepwise selection#
+regfit.fwd = regsubsets(G3 ~ ., data = port, nvmax = 28, method = "forward")#
+regfit.bwd = regsubsets(G3 ~ ., data = port, nvmax = 28, method ="backward")#
+#
+# create training and test data#
+train = sample(c(TRUE, FALSE), nrow(port), rep = TRUE)#
+test = 	(!train)#
+test.mat = model.matrix(G3 ~ ., data = port[test,])#
+#
+regfit.best = regsubsets(G3 ~ ., data = port[train,], nvmax = 28)#
+#
+val.errors = rep(NA, 28)#
+for(i in 1:28) {#
+	coefi = coef(regfit.best, id = i)#
+	pred = test.mat[,names(coefi)]%*%coefi#
+	val.errors[i] = mean((port$G3[test] - pred)^2)#
+}#
+#
+minErr <- which.min(val.errors)
+minErr
+k = 10
+folds = sample(1:k, nrow(port), replace = TRUE)
+folds
+cv.error = matrix(NA, k, 28, dimnames = list(NULL, paste(1:19)))
+cv.errors=matrix(NA,k,28, dimnames=list(NULL, paste(1:19)))
+cv.errors=matrix(NA,k,28, dimnames=list(NULL, paste(1:28)))
+for (j in 1:k) {#
+	best.fit = regsubsets(Salary ∼ ., data = port[folds ! = j,], nvmax = 28)#
+	for (i in 1:28) {#
+		pred = predict(best.fit, port[folds==j,], id = i) #
+		cv.errors[j, i] = mean((port$G3[folds==j] - pred)^2)#
+	}#
+}
+best
+for (j in 1:k) {#
+	best.fit = regsubsets(Salary ~ ., data = port[folds != j,], nvmax = 28)#
+	for (i in 1:28) {#
+		pred = predict(best.fit, port[folds==j,], id = i) #
+		cv.errors[j, i] = mean((port$G3[folds==j] - pred)^2)#
+	}#
+}
+for (j in 1:k) {#
+	best.fit = regsubsets(G3 ~ ., data = port[folds != j,], nvmax = 28)#
+	for (i in 1:28) {#
+		pred = predict(best.fit, port[folds==j,], id = i) #
+		cv.errors[j, i] = mean((port$G3[folds==j] - pred)^2)#
+	}#
+}
+folds
+predict.regsubsets = function(object, newdata, id, ...) {#
+	form = as.formula(object$call[2])#
+	mat = model.matrix(form, newdata)#
+	coefi = coef(objet, id = id)#
+	xvars = names(coefi)#
+	mat[, xvars] %*% coefi#
+}
+for (j in 1:k) {#
+	best.fit = regsubsets(G3 ~ ., data = port[folds != j,], nvmax = 28)#
+	for (i in 1:28) {#
+		pred = predict(best.fit, port[folds==j,], id = i) #
+		cv.errors[j, i] = mean((port$G3[folds==j] - pred)^2)#
+	}#
+}
+best.fit = regsubsets(G3 ~ ., data = port[folds != 1,], nvmax = 28)
+predict(best.fit, port[folds == 1], id = 1)
+predict.regsubsets(best.fit, port[folds == 1], id = 1)
+predict.regsubsets = function(object, newdata, id, ...) {#
+    form = as.formula(object$call[[2]])#
+    mat = model.matrix(form, newdata)#
+    coefi = coef(object, id = id)#
+    mat[, names(coefi)] %*% coefi#
+}
+predict(best.fit, port[folds == 1,], id = 1)
+for (j in 1:k) {#
+	best.fit = regsubsets(G3 ~ ., data = port[folds != j,], nvmax = 28)#
+	for (i in 1:28) {#
+		pred = predict(best.fit, port[folds==j,], id = i) #
+		cv.errors[j, i] = mean((port$G3[folds==j] - pred)^2)#
+	}#
+}
+mean.cv.errors = apply(cv.errors, 2, mean)
+mean.cv.errors
+par(mfrow = c(1, 1))
+plot(mean.cv.errors, type='b')
+which.min(mean.cv.errors)
+reg.best = regsubsets(G3 ~., data = port, nvmax = 28)
+coef(reg.best, 8)
+scale(port)
+x = model.matrix(G3 ~ ., port)[, -1]
+y = port$G3
+library(glmnet)
+grid = 10^set(10, -2, length = 100)
+grid = 10^seq(10, -2, length = 100)
+grid
+train = sample(1:nrow(x), nrow(x) / 2)
+train
+test = (-train)
+test
+y.test = y[test]
+y.test
+lasso.mod = glmnet(x[train, ], y[train], alpha = 1, lambda = grid)
+plot(lasso.mod)
+set.seed(1)
+cv.out = cv.glmnet(x[train,], y[train], alpha = 1)
+plot(cv.out)
+bestlam = cv.out$lambda.min
+bestlam
+lasso.pred = predict(lasso.mod, s = bestlam, newx = x[test,])
+mean((lasso.pred - y.test)^2)
+out = glmnet(x, y, alpha = 1, lambda = grid)
+out
+lasso.coef = predict(out, type = "coefficients", s = bestlam)
+lasso.coef
+plot(lasso.mod)
+library(ISLR)#
+library(leaps)#
+library(glmnet)#
+#
+set.seed(1)#
+#
+math = read.table("student-mat.csv", sep = ";", header = TRUE)#
+math$reason = NULL#
+math$guardian = NULL#
+math$G1 = NULL#
+math$G2 = NULL#
+#
+port = read.table("student-por.csv", sep = ";", header = TRUE)#
+port$reason = NULL#
+port$guardian = NULL#
+port$G1 = NULL#
+port$G2 = NULL#
+#
+# Attributes for both student-mat.csv (Math course) and student-por.csv (Portuguese language course) datasets: #
+#1 school - student's school (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira) #
+#2 sex - student's sex (binary: 'F' - female or 'M' - male) #
+#3 age - student's age (numeric: from 15 to 22) #
+#4 address - student's home address type (binary: 'U' - urban or 'R' - rural) #
+#5 famsize - family size (binary: 'LE3' - less or equal to 3 or 'GT3' - greater than 3) #
+#6 Pstatus - parent's cohabitation status (binary: 'T' - living together or 'A' - apart) #
+#7 Medu - mother's education (numeric: 0 - none, 1 - primary education (4th grade), 2 â€“ 5th to 9th grade, 3 â€“ secondary education or 4 â€“ higher education) #
+#8 Fedu - father's education (numeric: 0 - none, 1 - primary education (4th grade), 2 â€“ 5th to 9th grade, 3 â€“ secondary education or 4 â€“ higher education) #
+#9 Mjob - mother's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other') #
+#10 Fjob - father's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other') #
+#11 traveltime - home to school travel time (numeric: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour) #
+#12 studytime - weekly study time (numeric: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours) #
+#13 failures - number of past class failures (numeric: n if 1<=n<3, else 4) #
+#14 schoolsup - extra educational support (binary: yes or no) #
+#15 famsup - family educational support (binary: yes or no) #
+#16 paid - extra paid classes within the course subject (Math or Portuguese) (binary: yes or no) #
+#17 activities - extra-curricular activities (binary: yes or no) #
+#18 nursery - attended nursery school (binary: yes or no) #
+#19 higher - wants to take higher education (binary: yes or no) #
+#20 internet - Internet access at home (binary: yes or no) #
+#21 romantic - with a romantic relationship (binary: yes or no) #
+#22 famrel - quality of family relationships (numeric: from 1 - very bad to 5 - excellent) #
+#23 freetime - free time after school (numeric: from 1 - very low to 5 - very high) #
+#24 goout - going out with friends (numeric: from 1 - very low to 5 - very high) #
+#25 Dalc - workday alcohol consumption (numeric: from 1 - very low to 5 - very high) #
+#26 Walc - weekend alcohol consumption (numeric: from 1 - very low to 5 - very high) #
+#27 health - current health status (numeric: from 1 - very bad to 5 - very good) #
+#28 absences - number of school absences (numeric: from 0 to 93)#
+#
+#G3 - final grade#
+#
+# unused for now#
+combined = merge(math, port, by=c( #
+	"school"    , "address"  , "sex"       , "age"      , #
+	"famsize"   , "Pstatus"  , "Medu"      , "Fedu"     , #
+	"Mjob"      , "Fjob"     , "traveltime", "studytime", #
+	"failures"  , "schoolsup", "famsup"    , "paid"     , #
+	"activities", "nursery"  , "higher"    , "internet" , #
+	"romantic"  , "famrel"   , "freetime"  , "goout"    , #
+	"Dalc"      , "Walc"     , "health"    , "absences" ,#
+	"G3" ))#
+#
+# use cross validation to choose among models of different sizes#
+predict.regsubsets = function(object, newdata, id, ...) {#
+    form = as.formula(object$call[[2]])#
+    mat = model.matrix(form, newdata)#
+    coefi = coef(object, id = id)#
+    mat[, names(coefi)] %*% coefi#
+}#
+#
+k = 10 # 10 folds#
+folds = sample(1:k, nrow(port), replace = TRUE)#
+cv.errors = matirx(port, k, 28, dimnames = list(NULL, paste(1:28)))#
+#
+for (j in 1:k) {#
+	best.fit = regsubsets(G3 ~ ., data = port[folds != j,], nvmax = 28)#
+	for (i in 1:28) {#
+		pred = predict(best.fit, port[folds==j,], id = i) #
+		cv.errors[j, i] = mean((port$G3[folds==j] - pred)^2)#
+	}#
+}#
+#
+mean.cv.errors = apply(cv.errors, 2, mean)#
+par(mfrow = c(1, 1))#
+plot(mean.cv.errors, type = 'b')#
+#
+reg.best = regsubsets(G3 ~ ., data = port, nvmax = 28)#
+minMeanErr <- which.min(mean.cv.errors) #8 (7.847780)#
+#
+# the lasso#
+x = model.matrix(G3 ~ ., port)[, - 1]#
+y = port$G3#
+grid = 10^seq(10, -2, length = 100)#
+#
+train = sample(1:nrow(x), nrow(x) / 2)#
+test = (-train)#
+y.test = y[test]#
+#
+# cross validation on lambda#
+lasso.mod = glmnet(x[train,], y[train], alpha = 1, lambda = grid)#
+cv.out = cv.glmnet(x[train,], y[train], alpha = 1)#
+plot(cv.out)#
+bestlam = cv.out$lambda.min#
+lasso.pred = predict(lasso.mod, s = bestlam, newx = x[test])#
+mean((lasso.pred - y.test)^2)#
+#
+# build model using full dataset#
+out = glmnet(x, y, alpha = 1, lambda = grid)#
+lasso.coef = predict(out, type = "coefficients", s = bestlam)
+library(ISLR)#
+library(leaps)#
+library(glmnet)#
+#
+set.seed(1)#
+#
+math = read.table("student-mat.csv", sep = ";", header = TRUE)#
+math$reason = NULL#
+math$guardian = NULL#
+math$G1 = NULL#
+math$G2 = NULL#
+#
+port = read.table("student-por.csv", sep = ";", header = TRUE)#
+port$reason = NULL#
+port$guardian = NULL#
+port$G1 = NULL#
+port$G2 = NULL#
+#
+# Attributes for both student-mat.csv (Math course) and student-por.csv (Portuguese language course) datasets: #
+#1 school - student's school (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira) #
+#2 sex - student's sex (binary: 'F' - female or 'M' - male) #
+#3 age - student's age (numeric: from 15 to 22) #
+#4 address - student's home address type (binary: 'U' - urban or 'R' - rural) #
+#5 famsize - family size (binary: 'LE3' - less or equal to 3 or 'GT3' - greater than 3) #
+#6 Pstatus - parent's cohabitation status (binary: 'T' - living together or 'A' - apart) #
+#7 Medu - mother's education (numeric: 0 - none, 1 - primary education (4th grade), 2 â€“ 5th to 9th grade, 3 â€“ secondary education or 4 â€“ higher education) #
+#8 Fedu - father's education (numeric: 0 - none, 1 - primary education (4th grade), 2 â€“ 5th to 9th grade, 3 â€“ secondary education or 4 â€“ higher education) #
+#9 Mjob - mother's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other') #
+#10 Fjob - father's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other') #
+#11 traveltime - home to school travel time (numeric: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour) #
+#12 studytime - weekly study time (numeric: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours) #
+#13 failures - number of past class failures (numeric: n if 1<=n<3, else 4) #
+#14 schoolsup - extra educational support (binary: yes or no) #
+#15 famsup - family educational support (binary: yes or no) #
+#16 paid - extra paid classes within the course subject (Math or Portuguese) (binary: yes or no) #
+#17 activities - extra-curricular activities (binary: yes or no) #
+#18 nursery - attended nursery school (binary: yes or no) #
+#19 higher - wants to take higher education (binary: yes or no) #
+#20 internet - Internet access at home (binary: yes or no) #
+#21 romantic - with a romantic relationship (binary: yes or no) #
+#22 famrel - quality of family relationships (numeric: from 1 - very bad to 5 - excellent) #
+#23 freetime - free time after school (numeric: from 1 - very low to 5 - very high) #
+#24 goout - going out with friends (numeric: from 1 - very low to 5 - very high) #
+#25 Dalc - workday alcohol consumption (numeric: from 1 - very low to 5 - very high) #
+#26 Walc - weekend alcohol consumption (numeric: from 1 - very low to 5 - very high) #
+#27 health - current health status (numeric: from 1 - very bad to 5 - very good) #
+#28 absences - number of school absences (numeric: from 0 to 93)#
+#
+#G3 - final grade#
+#
+# unused for now#
+combined = merge(math, port, by=c( #
+	"school"    , "address"  , "sex"       , "age"      , #
+	"famsize"   , "Pstatus"  , "Medu"      , "Fedu"     , #
+	"Mjob"      , "Fjob"     , "traveltime", "studytime", #
+	"failures"  , "schoolsup", "famsup"    , "paid"     , #
+	"activities", "nursery"  , "higher"    , "internet" , #
+	"romantic"  , "famrel"   , "freetime"  , "goout"    , #
+	"Dalc"      , "Walc"     , "health"    , "absences" ,#
+	"G3" ))#
+#
+# use cross validation to choose among models of different sizes#
+predict.regsubsets = function(object, newdata, id, ...) {#
+    form = as.formula(object$call[[2]])#
+    mat = model.matrix(form, newdata)#
+    coefi = coef(object, id = id)#
+    mat[, names(coefi)] %*% coefi#
+}#
+#
+k = 10 # 10 folds#
+folds = sample(1:k, nrow(port), replace = TRUE)#
+cv.errors = matrix(port, k, 28, dimnames = list(NULL, paste(1:28)))#
+#
+for (j in 1:k) {#
+	best.fit = regsubsets(G3 ~ ., data = port[folds != j,], nvmax = 28)#
+	for (i in 1:28) {#
+		pred = predict(best.fit, port[folds==j,], id = i) #
+		cv.errors[j, i] = mean((port$G3[folds==j] - pred)^2)#
+	}#
+}#
+#
+mean.cv.errors = apply(cv.errors, 2, mean)#
+par(mfrow = c(1, 1))#
+plot(mean.cv.errors, type = 'b')#
+#
+reg.best = regsubsets(G3 ~ ., data = port, nvmax = 28)#
+minMeanErr <- which.min(mean.cv.errors) #8 (7.847780)#
+#
+# the lasso#
+x = model.matrix(G3 ~ ., port)[, - 1]#
+y = port$G3#
+grid = 10^seq(10, -2, length = 100)#
+#
+train = sample(1:nrow(x), nrow(x) / 2)#
+test = (-train)#
+y.test = y[test]#
+#
+# cross validation on lambda#
+lasso.mod = glmnet(x[train,], y[train], alpha = 1, lambda = grid)#
+cv.out = cv.glmnet(x[train,], y[train], alpha = 1)#
+plot(cv.out)#
+bestlam = cv.out$lambda.min#
+lasso.pred = predict(lasso.mod, s = bestlam, newx = x[test])#
+mean((lasso.pred - y.test)^2)#
+#
+# build model using full dataset#
+out = glmnet(x, y, alpha = 1, lambda = grid)#
+lasso.coef = predict(out, type = "coefficients", s = bestlam)#
+#
+# PLS
+pls.fit = plsr(G3 ~ ., data = port, subset = train, scale = TRUE)
+library(pls)
+plsr
+pls.fit = plsr(G3 ~ ., data = port, subset = train, scale = TRUE)
+summary(pls.fit)
+dim(g3)
+dim(port)
+validationplot(pls.fit, val.type = 'MSEP')
+which.min(pls.fit$MSEP)
+summary(pls.fit)
+pls.fit
+which.min(pls.fit$CV)
+pls.fit = plsr(G3 ~ ., data = port, subset = train, scale = TRUE, validation = "CV"))
+pls.fit = plsr(G3 ~ ., data = port, subset = train, scale = TRUE, validation = "CV")
+summary(pls.fit)
+pls.pred = predict(pls.fit, x[test,], ncomp = 2)
+mean((pls.pred - y.text)^2)
+mean((pls.pred - y.test)^2)
+which.min(pls.fit$CV)
+pls.fit = plsr(G3 ~., data = port, scale = TRUE, ncomp = 2)
+summary(pls.fit)
+Portfolio
+lasso.coef
+reg.best
+coef(reg.best, 8)
+boot
+library(boot)
+boot
+myfn = function() {}
+lasso.coef
+myfn = function() {#
+	coef(reg.best, 8)#
+}
+myfn()
+boot(port, myfn, 1000)
+boot(port)
+boot(port, R = 100)
+boot(port, statistic = myfn, R = 1000)
+myfn = function(a, b) {#
+	coef(reg.best, 8)#
+}
+boot(port, statistic = myfn, R = 1000)
+myfn = function(data) {#
+	reg.best = regsubsets(G3 ~ ., data = data, nvmax = 28)#
+	coef(reg.best, 8)#
+}
+boot(data = port, statistic = myfn, R = 1000)
+boot(data = port, statistic = myfn, R = 1000, sim = 'parametric'))
+boot(data = port, statistic = myfn, R = 1000, sim = 'parametric')
+coef(reg.best, 8)
+lasso.mod
+y.test
+lasso.prd
+lasso.pred
+lasso.pred - y.test
+y.test
+index = sample(100, 100, replace = T)
+index
+port[index]
+port[1]
+port[1, 2]
+port[1, index]
+port[, index]
+port[index,]
+index = sample(10, 10, replace = T)
+index
+port[, index]
+sample(port, size = 10, replace = TRUE)
+sample(port, replace = T, size = 1)
+sample(data, replace = TRUE)
+data[sample(5, 5), ]
+data[5,]
+port[5,]
+port[sample(10, 10),]
+port[sample(649, 1000, replace = TRUE),]
+nrow(port)
+resample = port[sample(10, 10, replace = TRUE),]
+resample
+myY = resample$G3
+myY
+resample.y = 2
+lasso.coef
+x = model.matrix(G3 ~ ., port)[, - 1]#
+y = port$G3#
+grid = 10^seq(10, -2, length = 100)#
+#
+train = sample(1:nrow(x), nrow(x) / 2)#
+test = (-train)#
+y.test = y[test]#
+#
+# cross validation on lambda#
+lasso.mod = glmnet(x[train,], y[train], alpha = 1, lambda = grid)#
+cv.out = cv.glmnet(x[train,], y[train], alpha = 1)#
+plot(cv.out)#
+bestlam = cv.out$lambda.min#
+lasso.pred = predict(lasso.mod, s = bestlam, newx = x[test])#
+mean((lasso.pred - y.test)^2)#
+#
+# build model using full dataset#
+out = glmnet(x, y, alpha = 1, lambda = grid)#
+lasso.coef = predict(out, type = "coefficients", s = bestlam)
+lasso.coef
+x = model.matrix(G3 ~ ., port)[, - 1]#
+y = port$G3#
+grid = 10^seq(10, -2, length = 100)#
+#
+train = sample(1:nrow(x), nrow(x) / 2)#
+test = (-train)#
+y.test = y[test]#
+#
+# cross validation on lambda#
+lasso.mod = glmnet(x[train,], y[train], alpha = 1, lambda = grid)#
+cv.out = cv.glmnet(x[train,], y[train], alpha = 1)#
+plot(cv.out)#
+bestlam = cv.out$lambda.min#
+lasso.pred = predict(lasso.mod, s = bestlam, newx = x[test])#
+mean((lasso.pred - y.test)^2)#
+#
+# build model using full dataset#
+out = glmnet(x, y, alpha = 1, lambda = grid)#
+lasso.coef = predict(out, type = "coefficients", s = bestlam)
+lasso.coef
+x[test]
+test
+x
+x = model.matrix(G3 ~ ., port)[, - 1]
+x
+x = model.matrix(G3 ~ ., port)
+x
+x = model.matrix(G3 ~ ., port)[, -1]
+x
+dim(port)
+port
+names(port)
+names(x)
+x
+x[0]
+x[0,]
+names(port)
+resample = port[sample(10, 10, replace = TRUE),]
+resample = port[sample(nrow(port), 10000), replace = TRUE]
+resample = port[sample(nrow(port), 10000), replace = TRUE)]
+resample = port[sample(nrow(port), 10000), replace = TRUE), ]
+resample = port[sample(nrow(port), 10000, replace = TRUE),]
+dim(resample)
+resampleY = resample$G3
+dim(resampleY)
+resampleY
+test
+x[test]
+x
+resampleX = model.matrix(G3 ~ ., resample)[, -1]
+resample = port[sample(1:nrow(port), 10, replace = TRUE),]
+resample
+resample.y = resample$G3
+resample.y
+x = model.matrix(G3 ~ ., resample)[, -1]
+x
+lasso.mod
+lasso.newPred = predict(lasso.mod, s = bestlam, newx = x)
+lasso.newPred
+mean((lasso.newPred) - resample.y)^2)
+mean((lasso.newPred - resample.y)^2)
+esample = port[sample(1:nrow(port), 10000, replace = TRUE),]#
+resample.y = resample$G3#
+resample.x = model.matrix(G3 ~ ., resample)[, -1]#
+resample.pred = predict(lasso.mod, s = bestlam, newx = resample.x)#
+mean((resample.pred - resample.y)^2)
+resample = port[sample(1:nrow(port), 10000, replace = TRUE),]#
+resample.y = resample$G3#
+resample.x = model.matrix(G3 ~ ., resample)[, -1]#
+resample.pred = predict(lasso.mod, s = bestlam, newx = resample.x)#
+mean((resample.pred - resample.y)^2)
+resample.plsPred = predict(pls.fit, x, ncomp = 2)
+dim(resample.plsPred)
+dim(x)
+resample.plsPred = predict(pls.fit, resample.x, ncomp = 2)
+dim(resample.plsPred)
+mean((resample.plsPred - resample.y)^2)
+reg.best
+summary(reg.best)
+regpred = predict(reg.best, resample, id = 8)
+dim(regpred)
+mse = mean((regpred - resample.y)^2)
+mse
+"asdf" == "asdf"
+"asdf" == ""
+resam
+resample.PLSPred = predict(pls.fit, resample.x, ncomp = 2)
+getResampleBSE = function(method, modelObject, specific, sampleSize, numSamples) {#
+	BSErrors <- vector(, numSamples)#
+	for (i in 1:numSamples) {#
+		resample = port[sample(1:nrow(port), sampleSize, replace = TRUE)]#
+		resample.y = resample$G3#
+		resample.x = model.matrix(G3 ~ ., resample)[, -1]#
+#
+		if (method == 'simple') {#
+			resample.simpPred = predict(modelObject, resample, id = specific)#
+			vector[i] = mean((resample.simpPred - resample.y)^2)#
+		} else if (method == 'lasso') {#
+			resample.lassoPred = pred(modelObject, s = specific, newx = resample.x)#
+			vector[i] = mean((resample.lassoPred - resample.y)^2)#
+		} else if (method == 'pls') {#
+			resample.PLSPred(modelObject, resample.x, ncomp = specific)#
+		} else {#
+			break#
+		}#
+	}#
+#
+	mean(BSErrors)#
+}
+getResampleBSE('lasso', lasso.mod, bestlam, 10, 10)
+sample(1:nrow(port), 10, replace = TRUE)
+sampleSize = 10
+port[sample(1:nrow(port), sampleSize, replace = TRUE)]
+getResampleBSE = function(method, modelObject, specific, sampleSize, numSamples) {#
+	BSErrors <- vector(, numSamples)#
+#
+	for (i in 1:numSamples) {#
+		resample = port[sample(1:nrow(port), sampleSize, replace = TRUE),]#
+		resample.y = resample$G3#
+		resample.x = model.matrix(G3 ~ ., resample)[, -1]#
+#
+		if (method == 'simple') {#
+			resample.simpPred = predict(modelObject, resample, id = specific)#
+			vector[i] = mean((resample.simpPred - resample.y)^2)#
+		} else if (method == 'lasso') {#
+			resample.lassoPred = pred(modelObject, s = specific, newx = resample.x)#
+			vector[i] = mean((resample.lassoPred - resample.y)^2)#
+		} else if (method == 'pls') {#
+			resample.PLSPred(modelObject, resample.x, ncomp = specific)#
+		} else {#
+			break#
+		}#
+	}#
+#
+	mean(BSErrors)#
+}
+getResampleBSE('lasso', lasso.mod, bestlam, 10, 10)
+getResampleBSE = function(method, modelObject, specific, sampleSize, numSamples) {#
+	BSErrors <- vector(, numSamples)#
+#
+	for (i in 1:numSamples) {#
+		resample = port[sample(1:nrow(port), sampleSize, replace = TRUE),]#
+		resample.y = resample$G3#
+		resample.x = model.matrix(G3 ~ ., resample)[, -1]#
+#
+		if (method == 'simple') {#
+			resample.simpPred = predict(modelObject, resample, id = specific)#
+			vector[i] = mean((resample.simpPred - resample.y)^2)#
+		} else if (method == 'lasso') {#
+			resample.lassoPred = predict(modelObject, s = specific, newx = resample.x)#
+			vector[i] = mean((resample.lassoPred - resample.y)^2)#
+		} else if (method == 'pls') {#
+			resample.PLSPred = predict(modelObject, resample.x, ncomp = specific)#
+			vector[i] = mean((resample.PLSPred - resample.y)^2)#
+		} else {#
+			break#
+		}#
+	}#
+#
+	mean(BSErrors)#
+}
+getResampleBSE('lasso', lasso.mod, bestlam, 10, 10)
+myv = vector(, 10)
+myv[1]
+getResampleBSE = function(method, modelObject, specific, sampleSize, numSamples) {#
+	BSErrors <- vector(, numSamples)#
+#
+	for (i in 1:numSamples) {#
+		resample = port[sample(1:nrow(port), sampleSize, replace = TRUE),]#
+		resample.y = resample$G3#
+		resample.x = model.matrix(G3 ~ ., resample)[, -1]#
+#
+		if (method == 'simple') {#
+			resample.simpPred = predict(modelObject, resample, id = specific)#
+			print(mean((resample.simpPred - resample.y)^2))#
+		} else if (method == 'lasso') {#
+			resample.lassoPred = predict(modelObject, s = specific, newx = resample.x)#
+			vector[i] = mean((resample.lassoPred - resample.y)^2)#
+		} else if (method == 'pls') {#
+			resample.PLSPred = predict(modelObject, resample.x, ncomp = specific)#
+			vector[i] = mean((resample.PLSPred - resample.y)^2)#
+		} else {#
+			break#
+		}#
+	}#
+#
+	mean(BSErrors)#
+}
+getResampleBSE('lasso', lasso.mod, bestlam, 10, 10)
+getResampleBSE = function(method, modelObject, specific, sampleSize, numSamples) {#
+	BSErrors <- vector(, numSamples)#
+#
+	for (i in 1:numSamples) {#
+		resample = port[sample(1:nrow(port), sampleSize, replace = TRUE),]#
+		resample.y = resample$G3#
+		resample.x = model.matrix(G3 ~ ., resample)[, -1]#
+#
+		if (method == 'simple') {#
+			resample.simpPred = predict(modelObject, resample, id = specific)#
+			vector[i] = mean((resample.simpPred - resample.y)^2)#
+		} else if (method == 'lasso') {#
+			resample.lassoPred = predict(modelObject, s = specific, newx = resample.x)#
+			print(mean((resample.lassoPred - resample.y)^2))#
+		} else if (method == 'pls') {#
+			resample.PLSPred = predict(modelObject, resample.x, ncomp = specific)#
+			vector[i] = mean((resample.PLSPred - resample.y)^2)#
+		} else {#
+			break#
+		}#
+	}#
+#
+	mean(BSErrors)#
+}
+getResampleBSE('lasso', lasso.mod, bestlam, 10, 10)
+getResampleBSE = function(method, modelObject, specific, sampleSize, numSamples) {#
+	BSErrors <- vector(, numSamples)#
+#
+	for (i in 1:numSamples) {#
+		resample = port[sample(1:nrow(port), sampleSize, replace = TRUE),]#
+		resample.y = resample$G3#
+		resample.x = model.matrix(G3 ~ ., resample)[, -1]#
+#
+		if (method == 'simple') {#
+			resample.simpPred = predict(modelObject, resample, id = specific)#
+			BSErrors[i] = mean((resample.simpPred - resample.y)^2)#
+		} else if (method == 'lasso') {#
+			resample.lassoPred = predict(modelObject, s = specific, newx = resample.x)#
+			BSErrors[i] = mean((resample.lassoPred - resample.y)^2)#
+		} else if (method == 'pls') {#
+			resample.PLSPred = predict(modelObject, resample.x, ncomp = specific)#
+			BSErrors[i] = mean((resample.PLSPred - resample.y)^2)#
+		} else {#
+			break#
+		}#
+	}#
+#
+	mean(BSErrors)#
+}
+getResampleBSE('lasso', lasso.mod, bestlam, 10, 10)
+getResampleBSE('lasso', lasso.mod, bestlam, 100, 1000)
+getResampleBSE('simple', reg.best, bestlam, 100, 1000)
+getResampleBSE('simple', reg.best, 8, 100, 1000)
+getResampleBSE('pls', pls.fit, 2, 100, 1000)
+a = c(1, 2, 3, 4, 5)
+a
+plot(a)
+hist(a)
+port
+library(ISLR)#
+library(leaps)#
+library(glmnet)#
+#
+set.seed(1)#
+#
+math = read.table("student-mat.csv", sep = ";", header = TRUE)#
+math$reason = NULL#
+math$guardian = NULL#
+math$G1 = NULL#
+math$G2 = NULL#
+#
+port = read.table("student-por.csv", sep = ";", header = TRUE)#
+port$reason = NULL#
+port$guardian = NULL#
+port$G1 = NULL#
+port$G2 = NULL#
+#
+# Attributes for both student-mat.csv (Math course) and student-por.csv (Portuguese language course) datasets: #
+#1 school - student's school (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira) #
+#2 sex - student's sex (binary: 'F' - female or 'M' - male) #
+#3 age - student's age (numeric: from 15 to 22) #
+#4 address - student's home address type (binary: 'U' - urban or 'R' - rural) #
+#5 famsize - family size (binary: 'LE3' - less or equal to 3 or 'GT3' - greater than 3) #
+#6 Pstatus - parent's cohabitation status (binary: 'T' - living together or 'A' - apart) #
+#7 Medu - mother's education (numeric: 0 - none, 1 - primary education (4th grade), 2 â€“ 5th to 9th grade, 3 â€“ secondary education or 4 â€“ higher education) #
+#8 Fedu - father's education (numeric: 0 - none, 1 - primary education (4th grade), 2 â€“ 5th to 9th grade, 3 â€“ secondary education or 4 â€“ higher education) #
+#9 Mjob - mother's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other') #
+#10 Fjob - father's job (nominal: 'teacher', 'health' care related, civil 'services' (e.g. administrative or police), 'at_home' or 'other') #
+#11 traveltime - home to school travel time (numeric: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour) #
+#12 studytime - weekly study time (numeric: 1 - <2 hours, 2 - 2 to 5 hours, 3 - 5 to 10 hours, or 4 - >10 hours) #
+#13 failures - number of past class failures (numeric: n if 1<=n<3, else 4) #
+#14 schoolsup - extra educational support (binary: yes or no) #
+#15 famsup - family educational support (binary: yes or no) #
+#16 paid - extra paid classes within the course subject (Math or Portuguese) (binary: yes or no) #
+#17 activities - extra-curricular activities (binary: yes or no) #
+#18 nursery - attended nursery school (binary: yes or no) #
+#19 higher - wants to take higher education (binary: yes or no) #
+#20 internet - Internet access at home (binary: yes or no) #
+#21 romantic - with a romantic relationship (binary: yes or no) #
+#22 famrel - quality of family relationships (numeric: from 1 - very bad to 5 - excellent) #
+#23 freetime - free time after school (numeric: from 1 - very low to 5 - very high) #
+#24 goout - going out with friends (numeric: from 1 - very low to 5 - very high) #
+#25 Dalc - workday alcohol consumption (numeric: from 1 - very low to 5 - very high) #
+#26 Walc - weekend alcohol consumption (numeric: from 1 - very low to 5 - very high) #
+#27 health - current health status (numeric: from 1 - very bad to 5 - very good) #
+#28 absences - number of school absences (numeric: from 0 to 93)#
+#
+#G3 - final grade#
+#
+# unused for now#
+combined = merge(math, port, by=c( #
+	"school"    , "address"  , "sex"       , "age"      , #
+	"famsize"   , "Pstatus"  , "Medu"      , "Fedu"     , #
+	"Mjob"      , "Fjob"     , "traveltime", "studytime", #
+	"failures"  , "schoolsup", "famsup"    , "paid"     , #
+	"activities", "nursery"  , "higher"    , "internet" , #
+	"romantic"  , "famrel"   , "freetime"  , "goout"    , #
+	"Dalc"      , "Walc"     , "health"    , "absences" ,#
+	"G3" ))#
+#
+# use cross validation to choose among models of different sizes#
+#
+predict.regsubsets = function(object, newdata, id, ...) {#
+    form = as.formula(object$call[[2]])#
+    mat = model.matrix(form, newdata)#
+    coefi = coef(object, id = id)#
+    mat[, names(coefi)] %*% coefi#
+}#
+#
+# simple multiple regression#
+reg.best = regsubsets(G3 ~ ., data = port, nvmax = 28)#
+#
+k = 10 # 10 folds#
+folds = sample(1:k, nrow(port), replace = TRUE)#
+cv.errors = matrix(port, k, 28, dimnames = list(NULL, paste(1:28)))#
+#
+for (j in 1:k) {#
+	best.fit = regsubsets(G3 ~ ., data = port[folds != j,], nvmax = 28)#
+	for (i in 1:28) {#
+		pred = predict(best.fit, port[folds==j,], id = i) #
+		cv.errors[j, i] = mean((port$G3[folds==j] - pred)^2)#
+	}#
+}#
+#
+mean.cv.errors = apply(cv.errors, 2, mean)#
+par(mfrow = c(1, 1))#
+plot(mean.cv.errors, type = 'b')#
+#
+minMeanErr <- which.min(mean.cv.errors) #8 (7.847780)#
+coef(reg.best, 8)#
+#
+# the lasso#
+x = model.matrix(G3 ~ ., port)[, - 1]#
+y = port$G3#
+grid = 10^seq(10, -2, length = 100)#
+#
+train = sample(1:nrow(x), nrow(x) / 2)#
+test = (-train)#
+y.test = y[test]#
+#
+# cross validation on lambda#
+lasso.mod = glmnet(x[train,], y[train], alpha = 1, lambda = grid)#
+cv.out = cv.glmnet(x[train,], y[train], alpha = 1)#
+plot(cv.out)#
+bestlam = cv.out$lambda.min#
+lasso.pred = predict(lasso.mod, s = bestlam, newx = x[test])#
+mean((lasso.pred - y.test)^2)#
+#
+# build model using full dataset#
+out = glmnet(x, y, alpha = 1, lambda = grid)#
+lasso.coef = predict(out, type = "coefficients", s = bestlam)#
+#
+# PLS#
+# cross validation on number of components#
+pls.fit = plsr(G3 ~ ., data = port, subset = train, scale = TRUE, validation = 'CV')#
+summary(pls.fit) # minimum validation error occurs at comp = 2#
+validationplot(pls.fit, val.type = 'MSEP')#
+#
+pls.pred = predict(pls.fit, x[test,], ncomp = 2)#
+mean((pls.pred - y.test)^2)#
+#
+# build model using full dataset#
+pls.fit = plsr(G3 ~ ., data = port, scale = TRUE, ncomp = 2)#
+summary(pls.fit)#
+# bootstrapping#
+resample = port[sample(1:nrow(port), 10000, replace = TRUE),]#
+resample.y = resample$G3#
+resample.x = model.matrix(G3 ~ ., resample)[, -1]#
+#
+# function to perform bootstrapping on model#
+# allow to specify sampleSize of each bootstrap, and number of samples to take#
+# assumes port data already exists#
+getResampleBSE = function(method, modelObject, specific, sampleSize, numSamples) {#
+	BSErrors <- vector(, numSamples)#
+#
+	for (i in 1:numSamples) {#
+		resample = port[sample(1:nrow(port), sampleSize, replace = TRUE),]#
+		resample.y = resample$G3#
+		resample.x = model.matrix(G3 ~ ., resample)[, -1]#
+#
+		if (method == 'simple') {#
+			resample.simpPred = predict(modelObject, resample, id = specific)#
+			BSErrors[i] = mean((resample.simpPred - resample.y)^2)#
+		} else if (method == 'lasso') {#
+			resample.lassoPred = predict(modelObject, s = specific, newx = resample.x)#
+			BSErrors[i] = mean((resample.lassoPred - resample.y)^2)#
+		} else if (method == 'pls') {#
+			resample.PLSPred = predict(modelObject, resample.x, ncomp = specific)#
+			BSErrors[i] = mean((resample.PLSPred - resample.y)^2)#
+		} else {#
+			break#
+		}#
+	}#
+#
+	hist(BSErrors)#
+	mean(BSErrors)#
+}#
+#
+# simple multiple regression#
+getResampleBSE('simple', reg.best, 8, 100, 1000)#
+#
+# the lasso#
+getResampleBSE('lasso', lasso.mod, bestlam, 100, 1000)#
+#
+# PLS#
+getResampleBSE('pls', pls.fit, 2, 100, 1000)#
+#
+## TODO#
+ # figure out graphs and plots#
+ # clean up code#
+ # take screenshots#
+ # git init, commit, push

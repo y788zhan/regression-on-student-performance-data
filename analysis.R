@@ -49,6 +49,9 @@ for (i in names(port)) {
 	port[[i]] = as.numeric(port[[i]])
 }
 
+rows <- nrow(port)
+cols <- ncol(port)
+
 ##################################################################
 #                                                                #
 # use cross validation to choose among models of different sizes #
@@ -67,20 +70,20 @@ predict.regsubsets = function(object, newdata, id, ...) {
 #       Simple Multiple Regression      #
 #                                       #
 #########################################
-reg.best = regsubsets(G3 ~ ., data = port, nvmax = 30)
+reg.best = regsubsets(G3 ~ ., data = port, nvmax = cols)
 
 # k-fold cross validation
 k = 10 # 10 folds
-folds = sample(1:k, nrow(port), replace = TRUE)
-cv.errors = matrix(NA, k, 30, dimnames = list(NULL, paste(1:30)))
+folds = sample(1:k, rows, replace = TRUE)
+cv.errors = matrix(NA, k, cols, dimnames = list(NULL, paste(1:cols)))
 
 ##
  # create matrix such that cv.errors[j, i]
  # is the test MSE for j-th cross-validation fold for the best i-variable model
  ##
 for (j in 1:k) {
-	best.fit = regsubsets(G3 ~ ., data = port[folds != j, ], nvmax = 30)
-	for (i in 1:30) {
+	best.fit = regsubsets(G3 ~ ., data = port[folds != j, ], nvmax = cols)
+	for (i in 1:cols) {
 		pred = predict(best.fit, port[folds == j, ], id = i) 
 		cv.errors[j, i] = mean((port$G3[folds == j] - pred) ^ 2)
 	}
@@ -187,9 +190,6 @@ summary(pls.fit)
  ##
 
 # bootstrapping
-resample = port[sample(1:nrow(port), 10000, replace = TRUE), ]
-resample.y = resample$G3
-resample.x = model.matrix(G3 ~ ., resample)[, -1]
 
 ##
  # function to perform bootstrapping on model
@@ -200,7 +200,7 @@ getResampleBSE = function(method, modelObject, specific, sampleSize, numSamples)
 	BSErrors <- vector(, numSamples)
 
 	for (i in 1:numSamples) {
-		resample = port[sample(1:nrow(port), sampleSize, replace = TRUE), ]
+		resample = port[sample(1:rows, sampleSize, replace = TRUE), ]
 		resample.y = resample$G3
 		resample.x = model.matrix(G3 ~ ., resample)[, -1]
 
@@ -225,14 +225,17 @@ getResampleBSE = function(method, modelObject, specific, sampleSize, numSamples)
 # reseed
 set.seed(1)
 
+sampleSize <- 100
+numSamples <- 1000
+
 # simple multiple regression
-getResampleBSE('simple', reg.best, minMSE, 100, 1000) # 7.121684
+getResampleBSE('simple', reg.best, minMSE, sampleSize, numSamples) # 7.121684
 
 # the lasso
-getResampleBSE('lasso', lasso.mod, bestlam, 100, 1000) # 7.03579
+getResampleBSE('lasso', lasso.mod, bestlam, sampleSize, numSamples) # 7.03579
 
 # PLS
-getResampleBSE('pls', pls.fit, 2, 100, 1000) # 6.87703
+getResampleBSE('pls', pls.fit, 2, sampleSize, numSamples) # 6.87703
 
 
 # conclusion
@@ -257,4 +260,9 @@ summary(port$G3)
  # bootstrapped MSE = 6.87703
  # RMSE = 2.6224
  # RMSE is 13.80% of G3's range
+ #
+ #
+ # From the different methods, we can see that the predictors that likely have
+ # a strong correlation with final grade are `school`, `failures`, `schoolsup`,
+ # and `higher`.
  ##

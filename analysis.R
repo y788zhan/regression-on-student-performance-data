@@ -65,6 +65,7 @@ predict.regsubsets = function(object, newdata, id, ...) {
     mat[, names(coefi)] %*% coefi
 }
 
+
 #########################################
 #                                       #
 #       Simple Multiple Regression      #
@@ -100,11 +101,12 @@ coef(reg.best, minMSE)
  #  11.8199775  -1.4058998   0.2674100   0.5196096  -1.4401402  -1.2924009   1.8360104  -0.4315652  -0.2035014 
  ##
 
-#######################################
-#                                     #
-#              The LASSO              #
-#                                     #
-#######################################
+
+#############################################
+#                                     		#
+#              Ridge Regression             #
+#                                     		#
+#############################################
 x = model.matrix(G3 ~ ., port)[, -1]
 y = port$G3
 # create lambda values from 1E-2 to 1E10
@@ -115,16 +117,67 @@ test = (-train)
 y.test = y[test]
 
 # cross validation on lambda
+ridge.mod = glmnet(x[train, ], y[train], alpha = 0, lambda = grid)
+cv.out = cv.glmnet(x[train, ], y[train], alpha = 0)
+bestridgelam = cv.out$lambda.min
+ridge.pred = predict(ridge.mod, s = bestridgelam, newx = x[test, ])
+mean((ridge.pred - y.test) ^ 2) # 7.236876
+
+# build model using full dataset
+out = glmnet(x, y, alpha = 0, lambda = grid)
+ridge.coef = predict(out, type = 'coefficients', s = bestridgelam)
+##
+ # 31 x 1 sparse Matrix of class "dgCMatrix"
+ #                        1
+ # (Intercept) 10.493201874
+ # school      -0.829508476
+ # sex         -0.387208146
+ # age          0.040154510
+ # address      0.306390395
+ # famsize      0.203340853
+ # Pstatus      0.078218592
+ # Medu         0.147416271
+ # Fedu         0.159087041
+ # Mjob         0.061974158
+ # Fjob        -0.004003125
+ # reason       0.062423888
+ # guardian    -0.104138654
+ # traveltime  -0.019912164
+ # studytime    0.329543586
+ # failures    -0.923940534
+ # schoolsup   -0.762467085
+ # famsup       0.047674481
+ # paid        -0.393284045
+ # activities   0.160307354
+ # nursery     -0.102718775
+ # higher       1.277642886
+ # internet     0.292183367
+ # romantic    -0.256328049
+ # famrel       0.083937382
+ # freetime    -0.116442203
+ # goout       -0.043645496
+ # Dalc        -0.207603955
+ # Walc        -0.108940461
+ # health      -0.113486235
+ # absences    -0.024212624
+ ##
+
+#######################################
+#                                     #
+#              The LASSO              #
+#                                     #
+#######################################
+# cross validation on lambda
 lasso.mod = glmnet(x[train, ], y[train], alpha = 1, lambda = grid)
 cv.out = cv.glmnet(x[train, ], y[train], alpha = 1)
 plot(cv.out)
-bestlam = cv.out$lambda.min
-lasso.pred = predict(lasso.mod, s = bestlam, newx = x[test, ])
+bestlassolam = cv.out$lambda.min
+lasso.pred = predict(lasso.mod, s = bestlassolam, newx = x[test, ])
 mean((lasso.pred - y.test) ^ 2) # 8.224117
 
 # build model using full dataset
 out = glmnet(x, y, alpha = 1, lambda = grid)
-lasso.coef = predict(out, type = 'coefficients', s = bestlam)
+lasso.coef = predict(out, type = 'coefficients', s = bestlassolam)
 ##
  # 31 x 1 sparse Matrix of class "dgCMatrix"
  #                         1
@@ -159,6 +212,38 @@ lasso.coef = predict(out, type = 'coefficients', s = bestlam)
  # Walc        -0.0987260532
  # health      -0.1312875122
  # absences    -0.0222306602
+ ##
+
+
+#################################################
+#                                               #
+#         Principal Component Regression        #
+#                                               #
+#################################################
+# cross validation on number of components
+pcr.fit = pcr(G3 ~ ., data = port, subset = train, scale = TRUE, validation = 'CV')
+summary(pcr.fit) # minimum validation error occurs at comp = 19
+validationplot(pcr.fit, val.type = 'MSEP')
+# note comp = 15 has a very similar validation error to comp = 19, but gives us more dimension reduction
+
+pcr.pred = predict(pcr.fit, x[test, ], ncomp = 15) # 7.212316
+mean((pcr.pred - y.test) ^ 2)
+
+# build model using full dataset
+pcr.fit = pcr(G3 ~ ., data = port, scale = TRUE, ncomp = 15)
+summary(pcr.fit)
+##
+ # Data: 	X dimension: 649 30 
+ #          Y dimension: 649 1
+ # Fit method: svdpc
+ # Number of components considered: 15
+ # TRAINING: % variance explained
+ #     1 comps  2 comps  3 comps  4 comps  5 comps  6 comps  7 comps  8 comps  9 comps  10 comps  11 comps
+ # X     10.31    18.65    24.54    29.31    33.72    38.06    42.29    46.44    50.01     53.45     56.84
+ # G3    19.13    22.68    22.69    22.85    24.92    25.78    25.80    26.35    26.38     26.48     27.72
+ #     12 comps  13 comps  14 comps  15 comps
+ # X      60.11     63.24     66.28     69.26
+ # G3     28.33     29.11     29.11     31.65
  ##
 
 
@@ -207,10 +292,10 @@ getResampleBSE = function(method, modelObject, specific, sampleSize, numSamples)
 		if (method == 'simple') {
 			resample.simpPred = predict(modelObject, resample, id = specific)
 			BSErrors[i] = mean((resample.simpPred - resample.y) ^ 2)
-		} else if (method == 'lasso') {
+		} else if (method == 'lasso' || method == 'ridge') {
 			resample.lassoPred = predict(modelObject, s = specific, newx = resample.x)
 			BSErrors[i] = mean((resample.lassoPred - resample.y) ^ 2)
-		} else if (method == 'pls') {
+		} else if (method == 'pls' || method == 'pcr') {
 			resample.PLSPred = predict(modelObject, resample.x, ncomp = specific)
 			BSErrors[i] = mean((resample.PLSPred - resample.y) ^ 2)
 		} else {
@@ -232,7 +317,13 @@ numSamples <- 1000
 getResampleBSE('simple', reg.best, minMSE, sampleSize, numSamples) # 7.121684
 
 # the lasso
-getResampleBSE('lasso', lasso.mod, bestlam, sampleSize, numSamples) # 7.03579
+getResampleBSE('lasso', lasso.mod, bestlassolam, sampleSize, numSamples) # 7.03579
+
+# ridge regression
+getResampleBSE('ridge', ridge.mod, bestridgelam, sampleSize, numSamples) # 7.251852
+
+# PCR
+getResampleBSE('pcr', pcr.fit, 15, sampleSize, numSamples) # 7.066262
 
 # PLS
 getResampleBSE('pls', pls.fit, 2, sampleSize, numSamples) # 6.87703
@@ -246,15 +337,27 @@ summary(port$G3)
  ##
 
 ##
+ # Performance Summary:
+ #
  # simple multiple regression performance:
  # bootstrapped MSE = 7.121684
  # RMSE = 2.6686
  # RMSE is 14.05% of G3's range
  #
+ # the ridge regression's performance:
+ # bootstrapped MSE = 7.251852
+ # RMSE = 2.6929
+ # RMSE is 14.17% of G3's range
+ #
  # the lasso's performance:
  # bootstrapped MSE = 7.03579
  # RMSE = 2.6525
  # RMSE is 13.96% of G3's range
+ #
+ # PCR's performance:
+ # bootstrapped MSE = 7.066262
+ # RMSE = 2.6582
+ # RMSE is 13.99% of G3's range
  #
  # PLS's performance:
  # bootstrapped MSE = 6.87703
@@ -262,7 +365,31 @@ summary(port$G3)
  # RMSE is 13.80% of G3's range
  #
  #
- # From the different methods, we can see that the predictors that likely have
- # a strong correlation with final grade are `school`, `failures`, `schoolsup`,
- # and `higher`.
+ # Interpretation:
+ # 
+ # Multiple linear regression provided the most subset-selection, with only 8 predictors selected. 
+ # It seemed to agree mostly with the only other subset-selection method, LASSO regression. 
+ # All predictors selected by cross-validation on regsubsets have a coefficient of at least 0.13 in absolute value 
+ # in LASSO regression. Both methods placed their highest coefficients on predictors such as school, failures, 
+ # schoolsup and higher.
+ #
+ # Multiple linear regression performed relatively well with resampled data.
+ #
+ # Comparing LASSO and ridge regression, ridge regression seemed to perform much better than LASSO with the test data.
+ # Note that the test data here is obtained simply through selecting a random half of the original data.
+ # Ridge regression's better performance may be attributed to the fact that it did not perform subset selection, and
+ # therefore had lower bias. But when compared in bootstrapped RMSE, the LASSO performed better. This could be an
+ # indication that ridge regression overfitted the dataset.
+ #
+ # Similar results came from PCR and PLS. PLS provided significanlty more dimension reduction than PCR, and in turn
+ # peformance worse on the (non-boostrapped) test data, but performed better on the boostrapped test data. This suggests
+ # that having 15 components in PCR may have led to overfitting and excessive variance.
+ #
+ # The LASSO regression eliminated 4 predictors (Pstatus, Fjob, traveltime, famsup), and came very close to elminating 5
+ # other predictors (Mjob, guardian, reason, nursery, goout). Given 30 predictors and only ~600 observations, it is very
+ # difficult to determine which predictors truly affect the response and which coefficients are correctly assigned.
+ # From the models and using common sense, we can likely agree that predictors such as the ones eliminated by LASSO are
+ # just noise. And predictors such as school, failures, schoolsup, higher and study time are more strongly correlated
+ # with student performance.
+ # 
  ##

@@ -274,14 +274,19 @@ summary(pls.fit)
  #          G3   29.150     33.80
  ##
 
-# bootstrapping
+
+##############################
+#                            #
+#		Bootstrapping        #
+#                            #
+##############################
 
 ##
  # function to perform bootstrapping on model
  # allow to specify sampleSize of each bootstrap, and number of samples to take
  # assumes port data already exists
  ##
-getResampleBSE = function(method, modelObject, specific, sampleSize, numSamples) {
+getResampleMSE = function(method, modelObject, specific, sampleSize, numSamples) {
 	BSErrors <- vector(, numSamples)
 
 	for (i in 1:numSamples) {
@@ -314,22 +319,27 @@ sampleSize <- 100
 numSamples <- 1000
 
 # simple multiple regression
-getResampleBSE('simple', reg.best, minMSE, sampleSize, numSamples) # 7.121684
+getResampleMSE('simple', reg.best, minMSE, sampleSize, numSamples) # 7.121684
 
 # the lasso
-getResampleBSE('lasso', lasso.mod, bestlassolam, sampleSize, numSamples) # 7.03579
+getResampleMSE('lasso', lasso.mod, bestlassolam, sampleSize, numSamples) # 7.03579
 
 # ridge regression
-getResampleBSE('ridge', ridge.mod, bestridgelam, sampleSize, numSamples) # 7.251852
+getResampleMSE('ridge', ridge.mod, bestridgelam, sampleSize, numSamples) # 7.251852
 
 # PCR
-getResampleBSE('pcr', pcr.fit, 15, sampleSize, numSamples) # 7.066262
+getResampleMSE('pcr', pcr.fit, 15, sampleSize, numSamples) # 7.066262
 
 # PLS
-getResampleBSE('pls', pls.fit, 2, sampleSize, numSamples) # 6.87703
+getResampleMSE('pls', pls.fit, 2, sampleSize, numSamples) # 6.87703
 
 
-# conclusion
+#########################
+#                       #
+#		Conclusion		#
+#                       #
+#########################
+
 summary(port$G3)
 ##
  #  Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 

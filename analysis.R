@@ -312,9 +312,6 @@ getResampleMSE = function(method, modelObject, specific, sampleSize, numSamples)
 	mean(BSErrors)
 }
 
-# reseed
-set.seed(1)
-
 sampleSize <- 100
 numSamples <- 1000
 

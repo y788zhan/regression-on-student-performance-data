@@ -1,8 +1,8 @@
 # Regression on Student Performance Data
-#
+
 [Data source: Universit of California, Irvine, Machine Learning respository](http://archive.ics.uci.edu/ml/datasets/Student+Performance)
-#
-#Performance Summary:
+
+## Performance Summary:
 
 | Model                          | Bootstrapped MSE | Root MSE | RMSE as % of Response Range |
 | ------------------------------ |:----------------:|:--------:|:---------------------------:|
@@ -12,7 +12,7 @@
 | Principal Component Regression | 7.066262         | 2.6582   | 13.99                       |
 | Partial Least Squares          | 6.87703          | 2.6224   | 13.80                       |
 
-#Interpretation:
+## Interpretation:
 
 Multiple linear regression provided the most subset-selection, with only 8 predictors selected. 
 It seemed to agree mostly with the only other subset-selection method, LASSO regression. 
